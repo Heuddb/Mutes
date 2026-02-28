@@ -7,6 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useGetAllProductsQuery } from "../Redux/Api/products/productsApi";
+import Loader from "./Loader";
 
 
 
@@ -15,14 +16,22 @@ export default function NewProducts() {
   const [activeFilter,setActiveFilter] = useState("New")
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
-  const {data}=useGetAllProductsQuery();
+  const {data,isLoading}=useGetAllProductsQuery();
   const productData = data?.filter(product=>product.condition?.toLowerCase()===activeFilter.toLowerCase()) || [];
+ 
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Loader />
+      </div>
+    )
+  }
  
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-    
+     
       <div className="text-center my-8 playfair-display">
         <h2 className="text-3xl inline-block relative pb-1.5 after:content-[''] after:absolute after:left-1/2 after:-bottom-1 after:-translate-x-1/2 after:w-28 after:h-[1px] after:bg-black">
         New Products

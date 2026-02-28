@@ -59,12 +59,13 @@ const CollectionPage = () => {
       return false;
     }
 
-    //  Manual category filter (checkbox)
-    if (
-      selectedFilters.category.length > 0 &&
-      !selectedFilters.category.includes(product.category)
-    ) {
-      return false;
+    //  Manual category filter (checkbox) - compare case-insensitively
+    if (selectedFilters.category.length > 0) {
+      const prodCat = (product.category || '').toLowerCase();
+      const selectedLower = selectedFilters.category.map((c) => c.toLowerCase());
+      if (!selectedLower.includes(prodCat)) {
+        return false;
+      }
     }
 
     //  Price filter
