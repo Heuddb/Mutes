@@ -34,16 +34,7 @@ app.use(razorpayRoute)
 
 mongoose
   .connect(process.env.MONGO_URL)
-  .then(async () => {
-    // ensure indexes are up-to-date for models that define them
-    const CartModel = require('./model/CartModel');
-    try {
-      await CartModel.syncIndexes();
-      console.log('Cart indexes synchronized');
-    } catch (syncErr) {
-      console.warn('Error syncing cart indexes:', syncErr.message);
-    }
-
+  .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
