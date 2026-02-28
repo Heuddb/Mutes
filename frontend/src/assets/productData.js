@@ -1,0 +1,107 @@
+// Mock data for the slider
+export const productsData = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&q=80",
+    name: "Men's corduroy vintage polo shirts",
+    price: 3865,
+    originalPrice: 6900,
+    category: "NEW ARRIVAL",
+    rating: 4,
+    reviews: 128,
+    discount: 44,
+    isNew: true,
+    colors: ["#4A5568", "#2D3748", "#1A202C"]
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&q=80",
+    name: "Women short sleeve silk t-shirt",
+    price: 4500,
+    originalPrice: 6500,
+    category: "PREMIUM",
+    rating: 5,
+    reviews: 89,
+    discount: 31,
+    isNew: true,
+    colors: ["#F56565", "#ED8936", "#ECC94B"]
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1544441893-675973e31985?w=400&q=80",
+    name: "Neition girls fashion flore jeggings",
+    price: 8900,
+    originalPrice: 12000,
+    category: "TRENDING",
+    rating: 4,
+    reviews: 256,
+    discount: 26,
+    isNew: false,
+    colors: ["#4299E1", "#38B2AC", "#9F7AEA"]
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80",
+    name: "Platform with zipper sneaker",
+    price: 7900,
+    originalPrice: 9900,
+    category: "FOOTWEAR",
+    rating: 4,
+    reviews: 312,
+    discount: 20,
+    isNew: true,
+    colors: ["#000000", "#718096", "#A0AEC0"]
+  },
+  {
+    id: 5,
+    image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80",
+    name: "Urban backpack with laptop sleeve",
+    price: 6500,
+    originalPrice: 8900,
+    category: "URBAN",
+    rating: 4,
+    reviews: 187,
+    discount: 27,
+    isNew: false,
+    colors: ["#2D3748", "#4A5568", "#718096"]
+  },
+  {
+    id: 6,
+    image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&q=80",
+    name: "Travel waterproof jacket",
+    price: 12900,
+    originalPrice: 17900,
+    category: "TRAVEL",
+    rating: 5,
+    reviews: 94,
+    discount: 28,
+    isNew: true,
+    colors: ["#3182CE", "#2B6CB0", "#2C5282"]
+  },
+  {
+    id: 7,
+    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&q=80",
+    name: "Natural organic cotton hoodie",
+    price: 5500,
+    originalPrice: 7500,
+    category: "NATURAL",
+    rating: 4,
+    reviews: 203,
+    discount: 27,
+    isNew: true,
+    colors: ["#48BB78", "#38A169", "#2F855A"]
+  },
+  {
+    id: 8,
+    image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&q=80",
+    name: "Smile collection sunglasses",
+    price: 3200,
+    originalPrice: 4500,
+    category: "ACCESSORIES",
+    rating: 4,
+    reviews: 167,
+    discount: 29,
+    isNew: false,
+    colors: ["#000000", "#553C9A", "#D53F8C"]
+  }
+];
