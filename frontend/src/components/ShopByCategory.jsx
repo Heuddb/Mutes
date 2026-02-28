@@ -7,15 +7,24 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useGetAllProductsQuery } from "../Redux/Api/products/productsApi";
+import Loader from "./Loader";
 export default function ShopByCategory() {
   // default to FASHION so the slider doesn't appear empty on load; special logic below
   const [activeFilter, setActiveFilter] = useState("FASHION");
   const [active, setActive] = useState("FASHION");
-  const { data: products = [] } = useGetAllProductsQuery();
+  const { data: products = [], isLoading } = useGetAllProductsQuery();
 
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
  
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px3 lg:px-8 py-8">
+        <Loader />
+      </div>
+    )
+  }
 
   // Filter products based on category (case-insensitive)
   // 'FASHION' is a virtual category representing any apparel (men or women)

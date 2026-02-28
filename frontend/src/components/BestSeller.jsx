@@ -7,10 +7,11 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useGetAllProductsQuery } from "../Redux/Api/products/productsApi";
+import Loader from "./Loader";
 
   export default function BestSeller() {
   const [activeFilter, setActiveFilter] = useState("Popular");
-  const { data } = useGetAllProductsQuery();
+  const { data, isLoading } = useGetAllProductsQuery();
 
   const productData = (data || []).filter(
     (product) =>
@@ -19,6 +20,14 @@ import { useGetAllProductsQuery } from "../Redux/Api/products/productsApi";
 
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Loader />
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

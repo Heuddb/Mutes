@@ -5,7 +5,7 @@ const Cart = new mongoose.Schema({
     user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
-        default:null
+        // no default; absence of the field distinguishes guest carts
     },
 
     guestId:{
@@ -35,6 +35,12 @@ const Cart = new mongoose.Schema({
    }]
    
 })
+
+// Ensure only one cart per authenticated user, but allow multiple guest carts.
+// Use a partial index so documents with `user: null` are not considered.
+Cart.index({ user: 1 }, { unique: true, partialFilterExpression: { user: { $ne: null } } });
+// Ensure guestId is unique when present
+Cart.index({ guestId: 1 }, { unique: true, partialFilterExpression: { guestId: { $ne: null } } });
 
 
 module.exports = mongoose.model('Cart',Cart);

@@ -7,12 +7,13 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useGetAllProductsQuery } from "../Redux/Api/products/productsApi";
+import Loader from "./Loader";
 
 
 export default function FeatureProducts() {
 
   const [activeFilter, setActiveFilter] = useState("Popular");
-  const { data: products=[] } = useGetAllProductsQuery();
+  const { data: products = [], isLoading } = useGetAllProductsQuery();
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
    
@@ -20,6 +21,14 @@ export default function FeatureProducts() {
    const filteredProducts = products.filter(product => product.condition?.toLowerCase() === activeFilter.toLowerCase());
    
 
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Loader />
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
