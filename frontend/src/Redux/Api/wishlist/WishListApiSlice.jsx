@@ -4,7 +4,7 @@ import { GuestId } from "../../../utils/Guest";
 export const WishlistApiSlice = createApi({
   reducerPath: "WishlistApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:3000",
+    baseUrl: "https://mutes-backend.onrender.com",
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token;
       if (token) headers.set("authorization", `Bearer ${token}`);
