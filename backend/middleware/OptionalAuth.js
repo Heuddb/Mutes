@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // Optional auth - doesn't fail if no token, just sets req.user if valid token exists
-const OptionalAuth = async (req, res, next) => {
+const OptionalAuth = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
