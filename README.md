@@ -16,13 +16,24 @@ node scripts/fixCartIndexes.js
 
 The script will:
 
-1. Delete all but one cart document where `user` is `null` or missing.
-2. Synchronize the schema indexes, creating a partial unique index on `user` and `guestId`.
+1. Drop any existing legacy unique indexes (`user_1` and un‑filtered `guestId_1`).
+2. Delete all but one cart document where `user` is `null` or missing.
+3. Synchronize the schema indexes, creating a partial unique index on `user` and `guestId`.
 
-After running it, restart your server. You may also manually drop the old `user_1` index via the Mongo shell if needed:
+After running it, restart your server. A JSON backup named `backend/scripts/cart_backup_before.json` will be created containing any carts that had `user:null` along with the pre‑cleanup index list; you can restore them manually if something goes wrong.
+
+To manually back up or revert the entire collection you can also use `mongodump`/`mongorestore`:
+
+```bash
+# take a dump of just the carts collection
+mongodump --db=mutes --collection=carts --out=../backup
+# later, to restore the dump
+mongorestore --db=mutes --collection=carts ../backup/mutes/carts.bson
+```
+
+If you prefer to drop the old index yourself instead of running the script, use the Mongo shell:
 
 ```js
-// connect to the database
 use mutes
 // list indexes
 db.carts.getIndexes()

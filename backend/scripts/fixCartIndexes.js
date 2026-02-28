@@ -16,8 +16,32 @@ async function run() {
     await mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to MongoDB');
 
-    // find documents where user is null or not set
+    // *** backup section: export carts with null user and current indexes ***
+    const dbColl = mongoose.connection.db.collection('carts');
+    const existingIndexes = await dbColl.indexes();
+    console.log('existing indexes before cleanup:', existingIndexes);
+    // dump offending carts to a file so they can be restored if needed
     const carts = await Cart.find({ $or: [{ user: null }, { user: { $exists: false } }] }).lean();
+    const fs = require('fs');
+    fs.writeFileSync(
+      'backend/scripts/cart_backup_before.json',
+      JSON.stringify({ timestamp: new Date(), carts, indexes: existingIndexes }, null, 2)
+    );
+    console.log(`backed up ${carts.length} cart(s) to backend/scripts/cart_backup_before.json`);
+
+    // drop any old uniques that do not respect the new partial index rules
+    const legacyUserIndex = existingIndexes.find(i => i.name === 'user_1');
+    if (legacyUserIndex) {
+      await dbColl.dropIndex('user_1');
+      console.log('dropped legacy user_1 index');
+    }
+    const legacyGuestIndex = existingIndexes.find(i => i.name === 'guestId_1');
+    if (legacyGuestIndex && !legacyGuestIndex.partialFilterExpression) {
+      await dbColl.dropIndex('guestId_1');
+      console.log('dropped legacy guestId_1 index');
+    }
+
+    // find documents where user is null or not set
     console.log(`found ${carts.length} cart(s) without a user field`);
 
     if (carts.length > 1) {
