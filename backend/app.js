@@ -14,7 +14,9 @@ const razorpayRoute = require("./routes/RazorpayRoutes");
 
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

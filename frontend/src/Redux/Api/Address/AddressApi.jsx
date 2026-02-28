@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const AddressApi = createApi({
     reducerPath:'AddressApi',
     baseQuery:fetchBaseQuery({
-        baseUrl:'http://localhost:3000',
+        baseUrl:'https://mutes-backend.onrender.com',
          prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token;
       if (token) headers.set("authorization", `Bearer ${token}`);
