@@ -26,7 +26,7 @@ const ProductDetails = () => {
   
   const wishlistProducts = wishlistData?.products || [];
   const isWishlist = wishlistProducts.some(
-    (item) => item._id === product?.products._id,
+    (item) => item._id === product?._id,
   );
 
   const wishlistHandler = async (id) => {
@@ -60,7 +60,7 @@ const ProductDetails = () => {
     );
   }
 
-  const productData = product?.products || {};
+  const productData = product || {};
   const images = productData.images || [];
 
   return (
