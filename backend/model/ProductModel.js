@@ -5,7 +5,8 @@ const Product = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      index: true // Add index for search
     },
 
     description: {
@@ -15,7 +16,8 @@ const Product = new mongoose.Schema(
 
     price: {
       type: Number,
-      required: true
+      required: true,
+      index: true // Add index for price range queries
     },
 
     discountPrice: {
@@ -35,7 +37,8 @@ const Product = new mongoose.Schema(
     },
 
     brand: {
-      type: String
+      type: String,
+      index: true // Add index for brand search
     },
 
     images: [
@@ -64,7 +67,8 @@ const Product = new mongoose.Schema(
     ratings: {
       average: {
         type: Number,
-        default: 0
+        default: 0,
+        index: true // Add index for rating sort
       },
       count: {
         type: Number,
@@ -74,15 +78,21 @@ const Product = new mongoose.Schema(
 
     isActive: {
       type: Boolean,
-      default: true
+      default: true,
+      index: true // Important: filter active products
     },
 
     condition:{
       type:String,
       enum:["New","Popular","Winter"],
+      index: true // Add index for condition filter
     }
   },
   { timestamps: true }
 );
+
+// Add compound index for common queries
+Product.index({ isActive: 1, category: 1, price: 1 });
+Product.index({ isActive: 1, "attributes.gender": 1, category: 1 });
 
 module.exports = mongoose.model("Product", Product);

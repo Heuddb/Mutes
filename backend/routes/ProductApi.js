@@ -3,7 +3,10 @@ const { getAllProducts, getProductById, getProductsByCategory } = require('../co
 
 const products = express.Router();
 
-products.get('/products',getAllProducts)
-products.get('/products/:id',getProductById)
+// Get all products with pagination, filters, and search
+products.get('/products', getAllProducts);
+
+// Get single product by ID
+products.get('/products/:id', getProductById);
 
 module.exports = products;

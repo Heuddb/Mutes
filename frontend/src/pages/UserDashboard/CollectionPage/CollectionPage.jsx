@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useGetAllProductsQuery } from "../../../Redux/Api/products/productsApi";
 import { useParams, useLocation } from "react-router-dom";
 
@@ -15,78 +15,68 @@ import { initialFilters } from "./constants";
 const CollectionPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState(initialFilters);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  
   const params = useParams();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const searchQueryParam = searchParams.get("q") || "";
 
-  const { data, isLoading, isError } = useGetAllProductsQuery();
+  // Build query parameters for the API
+  const queryParams = useMemo(() => {
+    const params = {
+      page: currentPage,
+      limit: pageSize
+    };
+
+    // Add search if present
+    if (searchQueryParam) {
+      params.search = searchQueryParam;
+    }
+
+    // Add route-based filters
+    if (params.category) {
+      return { ...params, category: params.category };
+    }
+
+    if (params.gender) {
+      return { ...params, gender: params.gender };
+    }
+
+    if (params.condition) {
+      return { ...params, condition: params.condition };
+    }
+
+    // Add manual filter selections
+    if (selectedFilters.category.length > 0) {
+      params.category = selectedFilters.category[0]; // API expects single category
+    }
+
+    if (selectedFilters.priceRange[0] > 0 || selectedFilters.priceRange[1] < 100000) {
+      params.minPrice = selectedFilters.priceRange[0];
+      params.maxPrice = selectedFilters.priceRange[1];
+    }
+
+    if (selectedFilters.sort) {
+      params.sort = selectedFilters.sort;
+    }
+
+    return params;
+  }, [currentPage, pageSize, searchQueryParam, selectedFilters, params]);
+
+  const { data, isLoading, isError } = useGetAllProductsQuery(queryParams);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
   if (isError) {
-    return <div>Error loading products.</div>;
+    return <div className="flex justify-center items-center min-h-screen">Error loading products.</div>;
   }
 
-  // Filter products based on route params and selected filters
-  const products = (data || []).filter((product) => {
-    //  Gender from route (case-insensitive)
-    if (
-      params.gender &&
-      product.attributes?.gender &&
-      product.attributes.gender.toLowerCase() !== params.gender.toLowerCase()
-    ) {
-      return false;
-    }
-
-    //  Category from route (case-insensitive)
-    if (
-      params.category &&
-      product.category &&
-      product.category.toLowerCase() !== params.category.toLowerCase()
-    ) {
-      return false;
-    }
-
-    //  Condition from route (case-insensitive)
-    if (
-      params.condition &&
-      product.condition &&
-      product.condition.toLowerCase() !== params.condition.toLowerCase()
-    ) {
-      return false;
-    }
-
-    //  Manual category filter (checkbox) - compare case-insensitively
-    if (selectedFilters.category.length > 0) {
-      const prodCat = (product.category || '').toLowerCase();
-      const selectedLower = selectedFilters.category.map((c) => c.toLowerCase());
-      if (!selectedLower.includes(prodCat)) {
-        return false;
-      }
-    }
-
-    //  Price filter
-    if (
-      product.discountPrice < selectedFilters.priceRange[0] ||
-      product.discountPrice > selectedFilters.priceRange[1]
-    ) {
-      return false;
-    }
-
-    //  Search query param
-    if (searchQueryParam) {
-      const q = searchQueryParam.toLowerCase();
-      const nameMatch = product.name && product.name.toLowerCase().includes(q);
-      const descMatch = product.description &&
-        product.description.toLowerCase().includes(q);
-      if (!nameMatch && !descMatch) return false;
-    }
-
-    return true;
-  });
+  const products = data?.products || [];
+  const totalPages = data?.totalPages || 1;
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters((prev) => ({
@@ -95,16 +85,19 @@ const CollectionPage = () => {
         ? prev[filterType].filter((item) => item !== value)
         : [...prev[filterType], value],
     }));
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handlePriceChange = (index, value) => {
     const newRange = [...selectedFilters.priceRange];
     newRange[index] = parseInt(value);
     setSelectedFilters((prev) => ({ ...prev, priceRange: newRange }));
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const clearFilters = () => {
     setSelectedFilters(initialFilters);
+    setCurrentPage(1);
   };
 
   const activeFilterCount = Object.values(selectedFilters).reduce(
@@ -143,7 +136,14 @@ const CollectionPage = () => {
             <ProductGrid products={products} />
 
             {/* Pagination */}
-            <Pagination />
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
           </div>
         </div>
       </div>
