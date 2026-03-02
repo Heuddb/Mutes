@@ -13,7 +13,8 @@ import Loader from "./Loader";
 export default function FeatureProducts() {
 
   const [activeFilter, setActiveFilter] = useState("Popular");
-  const { data: products = [], isLoading } = useGetAllProductsQuery();
+  const { data, isLoading } = useGetAllProductsQuery();
+  const products = data?.products || [];
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
    

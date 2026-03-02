@@ -12,8 +12,9 @@ import Loader from "./Loader";
   export default function BestSeller() {
   const [activeFilter, setActiveFilter] = useState("Popular");
   const { data, isLoading } = useGetAllProductsQuery();
+  const products = data?.products || [];
 
-  const productData = (data || []).filter(
+  const productData = products.filter(
     (product) =>
       product.condition?.toLowerCase() === activeFilter.toLowerCase(),
   ); //

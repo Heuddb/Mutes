@@ -17,7 +17,8 @@ export default function NewProducts() {
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
   const {data,isLoading}=useGetAllProductsQuery();
-  const productData = data?.filter(product=>product.condition?.toLowerCase()===activeFilter.toLowerCase()) || [];
+  const products = data?.products || [];
+  const productData = products.filter(product=>product.condition?.toLowerCase()===activeFilter.toLowerCase()) || [];
  
   if (isLoading) {
     return (
