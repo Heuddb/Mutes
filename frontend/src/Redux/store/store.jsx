@@ -9,7 +9,7 @@ import addressReducer  from "../Slices/addressIdSlice"
 import { ordersApi } from "../Api/Orders/orderApi"
 import { razorpayApi } from "../Api/razorpay/razorpayApi"
 
-
+ 
 export const store =  configureStore({
     reducer:{
         auth:authReducer,
