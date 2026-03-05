@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useGetAllProductsQuery } from "../../../Redux/Api/products/productsApi";
 import { useParams, useLocation } from "react-router-dom";
 
@@ -12,60 +12,26 @@ import Pagination from "./Pagination";
 // Import Constants
 import { initialFilters } from "./constants";
 
+const MIN_PRICE = 0;
+const MAX_PRICE = 50000;
+
 const CollectionPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  
-  const params = useParams();
+  const [pageSize] = useState(12);
+
+  const {
+    category: routeCategory,
+    gender: routeGender,
+    condition: routeCondition,
+  } = useParams();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const searchQueryParam = searchParams.get("q") || "";
 
-  // Build query parameters for the API
-  const queryParams = useMemo(() => {
-    const params = {
-      page: currentPage,
-      limit: pageSize
-    };
-
-    // Add search if present
-    if (searchQueryParam) {
-      params.search = searchQueryParam;
-    }
-
-    // Add route-based filters
-    if (params.category) {
-      return { ...params, category: params.category };
-    }
-
-    if (params.gender) {
-      return { ...params, gender: params.gender };
-    }
-
-    if (params.condition) {
-      return { ...params, condition: params.condition };
-    }
-
-    // Add manual filter selections
-    if (selectedFilters.category.length > 0) {
-      params.category = selectedFilters.category[0]; // API expects single category
-    }
-
-    if (selectedFilters.priceRange[0] > 0 || selectedFilters.priceRange[1] < 100000) {
-      params.minPrice = selectedFilters.priceRange[0];
-      params.maxPrice = selectedFilters.priceRange[1];
-    }
-
-    if (selectedFilters.sort) {
-      params.sort = selectedFilters.sort;
-    }
-
-    return params;
-  }, [currentPage, pageSize, searchQueryParam, selectedFilters, params]);
-
-  const { data, isLoading, isError } = useGetAllProductsQuery(queryParams);
+  // Fetch all products once; filtering and pagination are handled on the client
+  const { data, isLoading, isError } = useGetAllProductsQuery();
 
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -76,7 +42,116 @@ const CollectionPage = () => {
   }
 
   const products = data?.products || [];
-  const totalPages = data?.totalPages || 1;
+
+  // Apply all filters on the client side
+  const filteredProducts = useMemo(() => {
+    const searchTerm = searchQueryParam.trim().toLowerCase();
+
+    return products
+      .filter((product) => {
+        if (!searchTerm) return true;
+
+        const name = product?.name?.toLowerCase() || "";
+        const brand = product?.brand?.toLowerCase() || "";
+
+        return name.includes(searchTerm) || brand.includes(searchTerm);
+      })
+      .filter((product) => {
+        if (!routeCategory) return true;
+        const category = product?.category;
+        if (!category) return false;
+        return String(category).toLowerCase() === routeCategory.toLowerCase();
+      })
+      .filter((product) => {
+        if (!routeGender) return true;
+        const gender = product?.attributes?.gender || product?.gender;
+        if (!gender) return false;
+        return String(gender).toLowerCase() === routeGender.toLowerCase();
+      })
+      .filter((product) => {
+        if (!routeCondition) return true;
+        const condition = product?.condition;
+        if (!condition) return false;
+        return (
+          String(condition).toLowerCase() === routeCondition.toLowerCase()
+        );
+      })
+      .filter((product) => {
+        if (routeCategory || selectedFilters.category.length === 0) return true;
+        const category = product?.category;
+        if (!category) return false;
+        return selectedFilters.category
+          .map((c) => c.toLowerCase())
+          .includes(String(category).toLowerCase());
+      })
+      .filter((product) => {
+        if (selectedFilters.size.length === 0) return true;
+        const size = product?.size;
+        if (!size) return false;
+        return selectedFilters.size
+          .map((s) => s.toLowerCase())
+          .includes(String(size).toLowerCase());
+      })
+      .filter((product) => {
+        if (selectedFilters.color.length === 0) return true;
+        const color = product?.color;
+        if (!color) return false;
+        return selectedFilters.color
+          .map((c) => c.toLowerCase())
+          .includes(String(color).toLowerCase());
+      })
+      .filter((product) => {
+        const price = Number(product?.price);
+        if (Number.isNaN(price)) return true;
+
+        const [min, max] = selectedFilters.priceRange;
+        if (min === MIN_PRICE && max === MAX_PRICE) return true;
+
+        return price >= min && price <= max;
+      })
+      .sort((a, b) => {
+        const sortBy = selectedFilters.sortBy;
+
+        if (sortBy === "newest") {
+          const dateA = new Date(a?.createdAt || 0).getTime();
+          const dateB = new Date(b?.createdAt || 0).getTime();
+          return dateB - dateA;
+        }
+
+        if (sortBy === "price-low") {
+          return (a?.price || 0) - (b?.price || 0);
+        }
+
+        if (sortBy === "price-high") {
+          return (b?.price || 0) - (a?.price || 0);
+        }
+
+        if (sortBy === "rating") {
+          return (b?.rating || 0) - (a?.rating || 0);
+        }
+
+        // "featured" or unknown sort: leave order as-is
+        return 0;
+      });
+  }, [
+    products,
+    routeCategory,
+    routeGender,
+    routeCondition,
+    searchQueryParam,
+    selectedFilters,
+  ]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / pageSize || 1)
+  );
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredProducts.slice(start, end);
+  }, [filteredProducts, currentPage, pageSize]);
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters((prev) => ({
@@ -89,9 +164,24 @@ const CollectionPage = () => {
   };
 
   const handlePriceChange = (index, value) => {
-    const newRange = [...selectedFilters.priceRange];
-    newRange[index] = parseInt(value);
-    setSelectedFilters((prev) => ({ ...prev, priceRange: newRange }));
+    const parsedValue = Number.parseInt(value, 10);
+    if (Number.isNaN(parsedValue)) return;
+
+    setSelectedFilters((prev) => {
+      const newRange = [...prev.priceRange];
+      newRange[index] = parsedValue;
+
+      if (index === 0 && newRange[0] > newRange[1]) {
+        newRange[1] = newRange[0];
+      }
+
+      if (index === 1 && newRange[1] < newRange[0]) {
+        newRange[0] = newRange[1];
+      }
+
+      return { ...prev, priceRange: newRange };
+    });
+
     setCurrentPage(1); // Reset to first page when filters change
   };
 
@@ -132,8 +222,8 @@ const CollectionPage = () => {
               setSelectedFilters={setSelectedFilters}
             />
 
-            {/* Products Grid */}
-            <ProductGrid products={products} />
+          {/* Products Grid */}
+          <ProductGrid products={paginatedProducts} />
 
             {/* Pagination */}
             <Pagination 
