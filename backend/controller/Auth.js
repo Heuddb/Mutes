@@ -175,7 +175,7 @@ const postOtpVerification = async (req, res,next) => {
       user = await User.create(otpDoc.userData);
     }
 
-    // Handle wishlist merging - FIXED VERSION
+    
     try {
       if (guestId && guestId !== 'undefined' && guestId !== 'null') {
         const guestWishlist = await WishlistModel.findOne({ guestId });
