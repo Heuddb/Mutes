@@ -4,12 +4,13 @@ import { assets } from '../assets/assets';
 
 export default function CategoryGrid() {
   return (
-    <div className="min-h-fit bg-gray-50 p-4 sm:p-6 md:p-8">
+    // Only visible on large desktop screens (1280px and above)
+    <div className="hidden xl:block min-h-fit bg-gray-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Mobile Layout: Stack all items vertically */}
+        {/* Desktop Layout */}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 md:gap-6 lg:gap-8">
           
-          {/* Left Large Box - Full width on mobile */}
+          {/* Left Large Box */}
           <div className="w-full lg:flex-1 relative group bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
             <div className="aspect-square sm:aspect-[5/5] overflow-hidden">
               <img
@@ -24,10 +25,10 @@ export default function CategoryGrid() {
             </button>
           </div>
 
-          {/* Right Column - Full width on mobile */}
+          {/* Right Column */}
           <div className="w-full lg:flex-1 flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-8">
             
-            {/* Top Row - Stack vertically on mobile, horizontal on tablet+ */}
+            {/* Top Row */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 md:gap-6 lg:gap-8">
               
               {/* Shoes */}
