@@ -11,7 +11,7 @@ const OtpForm = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRef = useRef([]);
   const [verifyOtp, {isLoading,isError,isSuccess}] = useVerifyOtpMutation();
-  const email = useSelector((state) => state.auth.pendingEmail);
+  const phone = useSelector((state) => state.auth.pendingPhone);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -46,9 +46,9 @@ const OtpForm = () => {
 
     try {
       let guestId = localStorage.getItem("guestId");
-      console.log(email)
+      console.log(phone)
       let otp = finalOtp;
-      const res = await verifyOtp({ email, otp , guestId:guestId}).unwrap();
+      const res = await verifyOtp({ phone, otp , guestId:guestId}).unwrap();
       console.log("resposne : ", res)
 
       dispatch(
@@ -97,7 +97,7 @@ const OtpForm = () => {
           <div className="mb-12">
             <div className="text-2xl">Enter Verification Code</div>
             <div className="text-gray-500 mt-2">
-              We sent a 6-digit code to your email
+              We sent a 6-digit code to your phone number
             </div>
           </div>
 

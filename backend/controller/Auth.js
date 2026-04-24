@@ -1,4 +1,5 @@
 const client = require("@sendgrid/mail");
+const axios = require("axios");
 client.setApiKey(process.env.SENDGRID_API_KEY);
 const otps = require("../utils/otps");
 const User = require("../model/User");
@@ -10,14 +11,22 @@ const { set } = require("mongoose");
 const authorizedCart = require("../services/authanticatedCart");
 
 const postSignUp = async (req, res) => {
-  const { name, email, terms, updates } = req.body;
+  const { name, email, phone, terms, updates } = req.body;
 
+  // Check each field
   if (!email) {
+    console.log("Missing email");
     return res.status(400).json({ message: "Email is required" });
   }
 
+  if (!phone) {
+    console.log("Missing phone");
+    return res.status(400).json({ message: "Phone number is required" });
+  }
+
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ phone });
+
     if (existingUser) {
       return res
         .status(409)
@@ -25,36 +34,51 @@ const postSignUp = async (req, res) => {
     }
 
     const otp = otps();
-    await Otp.deleteMany({ email });
+
+    await Otp.deleteMany({ phone });
 
     const hashedOtp = await bcrypt.hash(otp, 10);
 
     await Otp.create({
-      email,
+      phone,
       otp: hashedOtp,
       userData: { name, email, terms, updates },
       expireAt: Date.now() + 5 * 60 * 1000,
     });
 
-    await client.send({
-      to: email,
-      from: process.env.SEND_GRID_EMAIL,
-      subject: "Verify your email - Mutes",
-      text: `Your OTP is ${otp}`,
+    //  SEND SMS HERE
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP for mutes store is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`
+      },
     });
+  
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("ERROR in postSignUp:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+
+    // Send more specific error
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      details: error.response?.data || error.toString(),
+    });
   }
 };
 
 let postLogin = async (req, res, next) => {
-  const { email } = req.body;
+  const { phone } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ phone });
 
     if (!user) {
       return res
@@ -64,21 +88,27 @@ let postLogin = async (req, res, next) => {
 
     const otp = otps();
 
-    await Otp.deleteMany({ email });
+
+    await Otp.deleteMany({ phone });
 
     const hashedOtp = await bcrypt.hash(otp, 10);
 
     await Otp.create({
-      email,
+      phone,
       otp: hashedOtp,
       expireAt: Date.now() + 5 * 60 * 1000,
     });
-
-    await client.send({
-      to: email,
-      from: process.env.SEND_GRID_EMAIL,
-      subject: "Verify your email - Mutes",
-      text: `Your OTP is ${otp}`,
+ 
+    // Send SMS via Fast2SMS
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`,
+      },
     });
 
     res.status(200).json({ message: "OTP sent successfully" });
@@ -89,9 +119,9 @@ let postLogin = async (req, res, next) => {
 };
 
 const PostResend = async (req, res) => {
-  const { email } = req.body;
+  const { phone } = req.body;
 
-  if (!email) {
+  if (!phone) {
     return res.status(400).json({
       success: false,
       message: "Email is required",
@@ -99,7 +129,7 @@ const PostResend = async (req, res) => {
   }
 
   try {
-    const existingOtp = await Otp.findOne({ email });
+    const existingOtp = await Otp.findOne({ phone });
 
     if (!existingOtp) {
       return res.status(400).json({
@@ -125,13 +155,18 @@ const PostResend = async (req, res) => {
     existingOtp.expireAt = now + 5 * 60 * 1000;
     await existingOtp.save();
 
-    await client.send({
-      to: email,
-      from: process.env.SEND_GRID_EMAIL,
-      subject: "Verify your email - Mutes",
-      text: `Your OTP is ${otp}`,
+  
+        // Send SMS 
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP for mutes store is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`,
+      },
     });
-
     return res.status(200).json({
       success: true,
       message: "OTP resent successfully",
@@ -146,85 +181,114 @@ const PostResend = async (req, res) => {
   }
 };
 
-const postOtpVerification = async (req, res,next) => {
-  const { email, otp, guestId } = req.body;
+const postOtpVerification = async (req, res, next) => {
+  const { phone, otp, guestId } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({ message: "Email and OTP required" });
+  if (!phone || !otp) {
+    return res.status(400).json({ message: "Phone and OTP required" });
   }
 
   try {
-    const otpDoc = await Otp.findOne({ email });
+    const otpDoc = await Otp.findOne({ phone });
+
     if (!otpDoc) {
       return res.status(400).json({ message: "OTP expired or invalid" });
     }
 
     if (Date.now() > otpDoc.expireAt) {
-      await Otp.deleteOne({ email });
+      await Otp.deleteOne({ phone });
       return res.status(400).json({ message: "OTP expired" });
     }
 
     const isMatch = await bcrypt.compare(otp, otpDoc.otp);
     if (!isMatch) {
+      console.log("Invalid OTP");
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ phone });
 
     if (!user) {
-      user = await User.create(otpDoc.userData);
+      // Validate userData exists
+      if (!otpDoc.userData || !otpDoc.userData.name || !otpDoc.userData.email) {
+        console.error("Missing userData:", otpDoc.userData);
+        return res.status(400).json({
+          message: "User data missing. Please sign up again.",
+        });
+      }
+
+      user = await User.create({
+        name: otpDoc.userData.name,
+        email: otpDoc.userData.email,
+        phone: phone,
+        terms: otpDoc.userData.terms || false,
+        updates: otpDoc.userData.updates || false,
+      });
     }
 
-    // Handle wishlist merging - FIXED VERSION
+    // Wishlist merge (with better error handling)
     try {
-      if (guestId && guestId !== 'undefined' && guestId !== 'null') {
+      if (guestId && guestId !== "undefined" && guestId !== "null") {
         const guestWishlist = await WishlistModel.findOne({ guestId });
         const userWishlist = await WishlistModel.findOne({ user: user._id });
 
-        if (guestWishlist && guestWishlist.products.length > 0) {
+        if (
+          guestWishlist &&
+          guestWishlist.products &&
+          guestWishlist.products.length > 0
+        ) {
           if (!userWishlist) {
-            // Create user wishlist from guest wishlist
             await WishlistModel.create({
               user: user._id,
               products: guestWishlist.products,
-              guestId: null
+              guestId: null,
             });
             await WishlistModel.deleteOne({ _id: guestWishlist._id });
+            console.log("Guest wishlist moved to user");
           } else {
-            // Merge guest wishlist into user wishlist
             const mergedProducts = new Set([
-              ...userWishlist.products.map(id => id.toString()),
-              ...guestWishlist.products.map(id => id.toString())
+              ...userWishlist.products.map((id) => id.toString()),
+              ...guestWishlist.products.map((id) => id.toString()),
             ]);
-            
-            userWishlist.products = Array.from(mergedProducts).map(id => 
-              mongoose.Types.ObjectId.isValid(id) ? id : null
-            ).filter(id => id !== null);
-            
+
+            userWishlist.products = Array.from(mergedProducts);
             await userWishlist.save();
             await WishlistModel.deleteOne({ _id: guestWishlist._id });
+            console.log("Wishlists merged");
           }
         }
       }
     } catch (wishlistError) {
-      console.error('Wishlist merge error:', wishlistError);
+      res
+        .status(500)
+        .json({
+          message: "Error processing wishlist. Please try again later.",
+        });
       // Don't fail authentication due to wishlist error
     }
 
-    
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, phone: user.phone },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
 
-    
-    await authorizedCart(guestId,user);
+    // Authorize cart (with error handling)
+    try {
+      console.log("Processing cart authorization...");
+      if (authorizedCart) {
+        await authorizedCart(guestId, user);
+        console.log("Cart authorized successfully");
+      }
+    } catch (cartError) {
+      console.error("Cart authorization error:", cartError.message);
+      // Don't fail authentication due to cart error
+    }
 
-    await Otp.deleteOne({ email });
+    console.log("Deleting OTP record...");
+    await Otp.deleteOne({ phone });
 
-    
-
+    console.log("VERIFICATION SUCCESSFUL");
     res.status(200).json({
       success: true,
       message: "Authentication successful",
@@ -232,12 +296,17 @@ const postOtpVerification = async (req, res,next) => {
       user: {
         name: user.name,
         email: user.email,
-        userId: user._id
+        userId: user._id,
+        phone: user.phone,
       },
     });
   } catch (error) {
-    console.error('OTP verification error:', error);
-    res.status(500).json({ message: "Server error during OTP verification" });
+    // Send detailed error for debugging
+    res.status(500).json({
+      message: "Server error during OTP verification",
+      error: error.message,
+      details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
   }
 };
 

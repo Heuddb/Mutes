@@ -8,15 +8,15 @@ const initialState = {
   token: token,
   userId: userId ,
   isAuthenticated: Boolean(token),
-  pendingEmail: null,
+  pendingPhone: null,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setPendingEmail: (state, action) => {
-      state.pendingEmail = action.payload;
+    setPendingPhone: (state, action) => {
+      state.pendingPhone = action.payload;
     },
 
     setCredentials: (state, action) => {
@@ -24,7 +24,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.userId = action.payload.userId;
       state.isAuthenticated = true;
-      state.pendingEmail = null;
+      state.pendingPhone = null;
     },
 
     logout: (state) => {
@@ -32,7 +32,7 @@ const authSlice = createSlice({
       state.token = null;
       state.userId = null;
       state.isAuthenticated = false;
-      state.pendingEmail = null;
+      state.pendingPhone = null;
  
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -41,6 +41,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setPendingEmail, setCredentials, logout } = authSlice.actions;
+export const { setPendingPhone, setCredentials, logout } = authSlice.actions;
 
 export default authSlice.reducer;

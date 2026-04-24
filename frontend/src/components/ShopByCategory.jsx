@@ -12,7 +12,7 @@ export default function ShopByCategory() {
   // default to FASHION so the slider doesn't appear empty on load; special logic below
   const [activeFilter, setActiveFilter] = useState("FASHION");
   const [active, setActive] = useState("FASHION");
-  const { data, isLoading } = useGetAllProductsQuery();
+  const { data, isLoading } = useGetAllProductsQuery({ limit: 100 });
   const products = data?.products || [];
 
   const navigationPrevRef = useRef(null);
