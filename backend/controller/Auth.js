@@ -46,17 +46,17 @@ const postSignUp = async (req, res) => {
       expireAt: Date.now() + 5 * 60 * 1000,
     });
 
-    // //  SEND SMS HERE
-    // const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
-    //   params: {
-    //     authorization: process.env.SMS_KEY,
-    //     route: "q",
-    //     message: `Your OTP for mutes store is ${otp}`,
-    //     language: "english",
-    //     flash: 0,
-    //     numbers: `91${phone}`
-    //   },
-    // });
+    //  SEND SMS HERE
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP for mutes store is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`
+      },
+    });
   
 
     res.status(200).json({ message: "OTP sent successfully" });
@@ -99,17 +99,17 @@ let postLogin = async (req, res, next) => {
       expireAt: Date.now() + 5 * 60 * 1000,
     });
  
-    // // Send SMS via Fast2SMS
-    // const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
-    //   params: {
-    //     authorization: process.env.SMS_KEY,
-    //     route: "q",
-    //     message: `Your OTP is ${otp}`,
-    //     language: "english",
-    //     flash: 0,
-    //     numbers: `91${phone}`,
-    //   },
-    // });
+    // Send SMS via Fast2SMS
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`,
+      },
+    });
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
@@ -155,18 +155,18 @@ const PostResend = async (req, res) => {
     existingOtp.expireAt = now + 5 * 60 * 1000;
     await existingOtp.save();
 
-    //  SEND SMS HERE
-        // // Send SMS via Fast2SMS
-    // const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
-    //   params: {
-    //     authorization: process.env.SMS_KEY,
-    //     route: "q",
-    //     message: `Your OTP for mutes store is ${otp}`,
-    //     language: "english",
-    //     flash: 0,
-    //     numbers: `91${phone}`,
-    //   },
-    // });
+  
+        // Send SMS 
+    const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
+      params: {
+        authorization: process.env.SMS_KEY,
+        route: "q",
+        message: `Your OTP for mutes store is ${otp}`,
+        language: "english",
+        flash: 0,
+        numbers: `91${phone}`,
+      },
+    });
     return res.status(200).json({
       success: true,
       message: "OTP resent successfully",
