@@ -62,7 +62,10 @@ const postSignUp = async (req, res) => {
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
    
-   
+     console.error("ERROR in postSignUp:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+
 
     // Send more specific error
     res.status(500).json({
