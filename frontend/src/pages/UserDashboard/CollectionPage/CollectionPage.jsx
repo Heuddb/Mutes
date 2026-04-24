@@ -30,8 +30,8 @@ const CollectionPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const searchQueryParam = searchParams.get("q") || "";
 
-  // Fetch all products once; filtering and pagination are handled on the client
-  const { data, isLoading, isError } = useGetAllProductsQuery();
+  // Fetch all products with increased limit; filtering and pagination are handled on the client
+  const { data, isLoading, isError } = useGetAllProductsQuery({ limit: 100 });
 
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;

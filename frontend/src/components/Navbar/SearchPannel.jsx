@@ -12,7 +12,7 @@ const SearchPanel = ({
   isMobile = false,
 }) => {
   const navigate = useNavigate();
-  const { data } = useGetAllProductsQuery();
+  const { data } = useGetAllProductsQuery({ limit: 100 });
   const allProducts = data?.products || [];
   const [searchResults, setSearchResults] = useState([]);
 

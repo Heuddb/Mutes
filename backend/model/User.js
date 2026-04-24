@@ -14,6 +14,12 @@ const User = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    phone:{
+      type:String,
+      required:true,
+      unique:true,
+
+    },
     terms: {
       type: Boolean,
       required: true,

@@ -11,7 +11,7 @@ import Loader from "./Loader";
 
   export default function BestSeller() {
   const [activeFilter, setActiveFilter] = useState("Popular");
-  const { data, isLoading } = useGetAllProductsQuery();
+  const { data, isLoading } = useGetAllProductsQuery({ limit: 100 });
   const products = data?.products || [];
 
   const productData = products.filter(

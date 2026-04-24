@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSignUpMutation } from "../../Redux/Api/auth/authApiSlice";
-import { setPendingEmail } from "../../Redux/Slices/authSlice";
+import { setPendingPhone } from "../../Redux/Slices/authSlice";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 
@@ -11,6 +11,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [terms, setTerms] = useState(false);
   const [updates, setUpdates] = useState(false);
+  const [phone, setPhone] = useState("");
 
   const dispatch = useDispatch();
   const [signup, { isLoading, isError, isSuccess }] = useSignUpMutation();
@@ -18,15 +19,16 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = { name, email, terms, updates };
+    const data = { name, email, phone, terms, updates };
+    console.log(data);
     await signup(data).unwrap();
-    dispatch(setPendingEmail(email));
+    dispatch(setPendingPhone(phone));
     navigate("/auth/verify-otp");
   };
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("otp sent to your email");
+      toast.success("otp sent to your phone number");
       navigate("/auth/verify-otp");
     }
     if (isError) {
@@ -66,6 +68,23 @@ const SignUp = () => {
                 className="w-full py-3 border-0 border-b border-gray-300 focus:outline-none focus:border-black"
                 placeholder=""
               />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <div className="text-sm">Phone</div>
+              <div className="relative">
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-600">
+                  +91{" "}
+                </span>
+                <input
+                  onChange={(e) => setPhone(e.target.value)}
+                  type="text"
+                  name="phone"
+                  className="w-full py-3 pl-8 pr-5 border-0 border-b border-gray-300 focus:outline-none focus:border-black"
+                  placeholder=""
+                />
+              </div>
             </div>
 
             {/* Terms & Conditions */}

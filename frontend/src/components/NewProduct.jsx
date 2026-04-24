@@ -16,7 +16,7 @@ export default function NewProducts() {
   const [activeFilter,setActiveFilter] = useState("New")
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
-  const {data,isLoading}=useGetAllProductsQuery();
+  const {data,isLoading}=useGetAllProductsQuery({ limit: 100 });
   const products = data?.products || [];
   const productData = products.filter(product=>product.condition?.toLowerCase()===activeFilter.toLowerCase()) || [];
  
