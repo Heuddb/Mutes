@@ -57,6 +57,8 @@ const postSignUp = async (req, res) => {
         numbers: `91${phone}`
       },
     });
+
+    console.log("sms otp res  : " , otp , smsResponse.data); 
   
 
     res.status(200).json({ message: "OTP sent successfully" });
@@ -75,9 +77,12 @@ const postSignUp = async (req, res) => {
 };
 
 let postLogin = async (req, res, next) => {
+
+
   const { phone } = req.body;
 
   try {
+  
     const user = await User.findOne({ phone });
 
     if (!user) {
@@ -90,16 +95,15 @@ let postLogin = async (req, res, next) => {
 
 
     await Otp.deleteMany({ phone });
-
     const hashedOtp = await bcrypt.hash(otp, 10);
-
     await Otp.create({
       phone,
       otp: hashedOtp,
       expireAt: Date.now() + 5 * 60 * 1000,
     });
+     console.log("8");
  
-    // Send SMS via Fast2SMS
+    // // Send SMS via Fast2SMS
     const smsResponse = await axios.get("https://www.fast2sms.com/dev/bulkV2", {
       params: {
         authorization: process.env.SMS_KEY,
@@ -111,11 +115,16 @@ let postLogin = async (req, res, next) => {
       },
     });
 
+    console.log("res 9 : " , smsResponse)
+
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "unable to login user" });
-  }
+  console.error("LOGIN ERROR:");
+  return res.status(500).json({
+    message: "unable to login user",
+    error: error.message,
+  });
+}
 };
 
 const PostResend = async (req, res) => {
