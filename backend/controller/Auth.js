@@ -13,7 +13,6 @@ const authorizedCart = require("../services/authanticatedCart");
 const postSignUp = async (req, res) => {
   const { name, email, phone, terms, updates } = req.body;
 
-  // Check each field
   if (!email) {
     console.log("Missing email");
     return res.status(400).json({ message: "Email is required" });
