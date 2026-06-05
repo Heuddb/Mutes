@@ -58,7 +58,6 @@ const postSignUp = async (req, res) => {
       },
     });
 
-    console.log("sms otp res  : " , otp , smsResponse.data); 
   
 
     res.status(200).json({ message: "OTP sent successfully" });
